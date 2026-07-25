@@ -3,23 +3,20 @@ import time
 import requests
 from seleniumbase import SB
 
-# ==================== 配置区域 ====================
-TELEGRAM_BOT_TOKEN = os.getenv("TG_BOT_TOKEN", "8955581661:AAERfToZyB1RpAMRVQx1gx0lasNxjBJeLUQ")
-TELEGRAM_CHAT_ID = os.getenv("TG_CHAT_ID", "7816469203")
+# ==================== 核心配置（彻底纯净版） ====================
+TELEGRAM_BOT_TOKEN = "8955581661:AAERfToZyB1RpAMRVQx1gx0lasNxjBJeLUQ"
+TELEGRAM_CHAT_ID = "7816469203"
 
-EMAIL = os.getenv("THEROSE_EMAIL", "llxxcc2050@gmail.com")
-PASSWORD = os.getenv("THEROSE_PASSWORD", "Llxxcc1214")
-SERVER_ID = os.getenv("THEROSE_SERVER_ID", "30c38986") 
+EMAIL = "llxxcc2050@gmail.com"
+PASSWORD = "Llxxcc1214"
+SERVER_ID = "30c38986" 
 
 PANEL_LOGIN_URL = "https://panel.therose.cloud/auth/login"
 SERVER_CONSOLE_URL = f"https://panel.therose.cloud/server/{SERVER_ID}"
-# ==================================================
+# ==================================================================
 
 def send_tg_notification(message):
-    """发送 Telegram 通知"""
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-        print("⚠️ 未配置 Telegram Token 或 Chat ID，跳过发送通知。")
-        return
+    """发送 Telegram 通知（无任何拦截，直接发送）"""
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message, "parse_mode": "HTML"}
     try:
@@ -73,7 +70,6 @@ def run_automation():
             sb.open(SERVER_CONSOLE_URL)
             sb.sleep(6)
             
-            # 确保在正确的服务器页面
             if "server/" not in sb.get_current_url():
                 log("🔀 面板未响应，再次尝试强制切入控制台...")
                 sb.open(SERVER_CONSOLE_URL)
@@ -81,7 +77,6 @@ def run_automation():
 
             log("🟢 服务器控制台已加载，准备执行强力多策略重启...")
             
-            # 多策略强力按钮匹配与点击方案
             selectors = [
                 'button:contains("Restart")', 
                 'button:contains("restart")',
@@ -109,26 +104,30 @@ def run_automation():
                 except Exception:
                     continue
             
-            # JS 强行穿透点击兜底
+            # ==================== 【核心修复】JS 强行穿透点击兜底 ====================
             if not btn_clicked:
                 log("⚠️ 常规文本定位未命中，尝试注入底层 JavaScript 强行穿透点击...")
+                
+                # 使用匿名立即执行函数，彻底解决 Illegal return statement 报错问题
                 js_click_script = """
-                const tags = Array.from(document.querySelectorAll('button, div, span, a'));
-                const target = tags.find(el => {
-                    if(!el.textContent) return false;
-                    const text = el.textContent.trim().toLowerCase();
-                    return text === 'restart' || text === '重启' || text.includes('restart');
-                });
-                if (target) {
-                    target.click();
-                    return true;
-                }
-                const powerBtn = document.querySelector('button[class*="power"], button[class*="restart"]');
-                if (powerBtn) {
-                    powerBtn.click();
-                    return true;
-                }
-                return false;
+                return (() => {
+                    const tags = Array.from(document.querySelectorAll('button, div, span, a'));
+                    const target = tags.find(el => {
+                        if(!el.textContent) return false;
+                        const text = el.textContent.trim().toLowerCase();
+                        return text === 'restart' || text === '重启' || text.includes('restart');
+                    });
+                    if (target) {
+                        target.click();
+                        return true;
+                    }
+                    const powerBtn = document.querySelector('button[class*="power"], button[class*="restart"]');
+                    if (powerBtn) {
+                        powerBtn.click();
+                        return true;
+                    }
+                    return false;
+                })();
                 """
                 try:
                     res = sb.execute_script(js_click_script)
@@ -146,27 +145,26 @@ def run_automation():
             else:
                 raise Exception("❌ 页面上未找到可点击的 Start / Restart 按钮")
 
-            # ==================== 第三步：尝试主站续期（降级可选流程） ====================
+            # ==================== 第三步：尝试主站续期（可选流程） ====================
             log("📄 尝试进入主站处理续期（视 Cloudflare 盾情况而定）...")
             try:
                 sb.open("https://therose.cloud/dashboard")
                 sb.sleep(4)
-                # 哪怕主站由于进不去卡住，由于上面重启已经做完了，这里也不会影响核心结果
                 extend_btn_selector = 'button:contains("Extend"), button:contains("续期"), a:contains("Extend")'
                 if sb.is_element_visible(extend_btn_selector):
                     sb.click(extend_btn_selector)
                     log("🎉 [可选流程] 成功点击续期按钮！")
                 else:
                     log("⏳ [可选流程] 未到续期时间或主站被盾拦截，本次跳过。")
-            except Exception as ext_err:
-                log(f"⚠️ 续期可选流程提示（不影响重启结果）: 主站访问受限")
+            except Exception:
+                log("⚠️ 续期可选流程提示（不影响重启结果）: 主站访问受限")
 
         except Exception as e:
             error_msg = f"❌ 脚本运行出错: \n {str(e)}"
             log(error_msg)
         finally:
             log("🏁 脚本执行完毕.")
-            # 汇总所有日志发送至 Telegram
+            # 无论成功失败，都将发送 Telegram 通知
             full_notification_text = "\n".join(msg_logs)
             send_tg_notification(f"<b>Therose 自动化执行报告</b>\n\n{full_notification_text}")
 
