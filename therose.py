@@ -4,10 +4,10 @@ import os, re, sys, time, requests
 from seleniumbase import SB
 
 # 环境变量 
-EMAIL = os.environ.get("EMAIL") or ""            # 邮箱   
-PASSWORD = os.environ.get("PASSWORD") or ""      # 密码
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN") or ""  # tg通知 bot token
-TG_CHAT_ID = os.environ.get("TG_CHAT_ID") or ""      # tg通知 chat_id id
+EMAIL = os.environ.get("EMAIL") or "llxxcc2050@gmail.com"            # 邮箱   
+PASSWORD = os.environ.get("PASSWORD") or "jyPxDtbknj72UeJ"      # 密码
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN") or "8955581661:AAERfToZyB1RpAMRVQx1gx0lasNxjBJeLUQ"  # tg通知 bot token
+TG_CHAT_ID = os.environ.get("TG_CHAT_ID") or "7816469203"      # tg通知 chat_id id
 
 # 目标服务器面板地址
 SERVER_URL = os.environ.get("SERVER_URL") or "https://panel.therose.cloud/server/1a25685b"
