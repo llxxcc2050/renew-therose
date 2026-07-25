@@ -5,7 +5,7 @@ from seleniumbase import SB
 
 # 环境变量 
 EMAIL = os.environ.get("EMAIL") or "llxxcc2050@gmail.com"            # 邮箱   
-PASSWORD = os.environ.get("PASSWORD") or "jyPxDtbknj72UeJ"      # 密码
+PASSWORD = os.environ.get("PASSWORD") or "Llxxcc1214"      # 密码
 TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN") or "8955581661:AAERfToZyB1RpAMRVQx1gx0lasNxjBJeLUQ"  # tg通知 bot token
 TG_CHAT_ID = os.environ.get("TG_CHAT_ID") or "7816469203"      # tg通知 chat_id id
 
