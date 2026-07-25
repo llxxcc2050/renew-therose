@@ -3,13 +3,19 @@ import time
 import requests
 from seleniumbase import SB
 
-# ==================== 核心配置（优先读取 GitHub 环境变量） ====================
-TELEGRAM_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8955581661:AAERfToZyB1RpAMRVQx1gx0lasNxjBJeLUQ")
-TELEGRAM_CHAT_ID = os.environ.get("TG_CHAT_ID", "7816469203")
+# ==================== 核心配置（智能防空兜底版） ====================
+# 优先读环境变量，如果读出来是空值，则自动使用后面写死的默认值
 
-EMAIL = os.environ.get("EMAIL", "llxxcc2050@gmail.com")
-PASSWORD = os.environ.get("PASSWORD", "Llxxcc1214")
-SERVER_ID = os.environ.get("SERVER_ID", "30c38986")
+def get_config(env_name, default_value):
+    val = os.environ.get(env_name, "").strip()
+    return val if val else default_value
+
+TELEGRAM_BOT_TOKEN = get_config("TG_BOT_TOKEN", "8955581661:AAERfToZyB1RpAMRVQx1gx0lasNxjBJeLUQ")
+TELEGRAM_CHAT_ID = get_config("TG_CHAT_ID", "7816469203")
+
+EMAIL = get_config("EMAIL", "llxxcc2050@gmail.com")
+PASSWORD = get_config("PASSWORD", "Llxxcc1214")
+SERVER_ID = get_config("SERVER_ID", "30c38986")
 
 PANEL_LOGIN_URL = "https://panel.therose.cloud/auth/login"
 SERVER_CONSOLE_URL = f"https://panel.therose.cloud/server/{SERVER_ID}"
@@ -159,7 +165,6 @@ def run_automation():
         except Exception as e:
             error_msg = f"❌ 脚本运行出错: \n {str(e)}"
             log(error_msg)
-            # 出错时自动截屏保存，方便去 Artifacts 下载查看现场
             try:
                 sb.save_screenshot("error_screenshot.png")
                 log("📸 已保存错误现场截图")
