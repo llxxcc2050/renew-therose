@@ -3,17 +3,17 @@ import time
 import requests
 from seleniumbase import SB
 
-# ==================== 核心配置 ====================
-TELEGRAM_BOT_TOKEN = "8955581661:AAERfToZyB1RpAMRVQx1gx0lasNxjBJeLUQ"
-TELEGRAM_CHAT_ID = "7816469203"
+# ==================== 核心配置（优先读取 GitHub 环境变量） ====================
+TELEGRAM_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8955581661:AAERfToZyB1RpAMRVQx1gx0lasNxjBJeLUQ")
+TELEGRAM_CHAT_ID = os.environ.get("TG_CHAT_ID", "7816469203")
 
-EMAIL = "llxxcc2050@gmail.com"
-PASSWORD = "Llxxcc1214"
-SERVER_ID = "30c38986" 
+EMAIL = os.environ.get("EMAIL", "llxxcc2050@gmail.com")
+PASSWORD = os.environ.get("PASSWORD", "Llxxcc1214")
+SERVER_ID = os.environ.get("SERVER_ID", "30c38986")
 
 PANEL_LOGIN_URL = "https://panel.therose.cloud/auth/login"
 SERVER_CONSOLE_URL = f"https://panel.therose.cloud/server/{SERVER_ID}"
-# ==================================================================
+# ============================================================================
 
 def send_tg_notification(message):
     """发送 Telegram 通知"""
@@ -67,7 +67,7 @@ def run_automation():
             # ==================== 第二步：进入目标服务器控制台 ====================
             log(f"🔄 正在强制切入目标服务器控制台: {SERVER_CONSOLE_URL}")
             sb.open(SERVER_CONSOLE_URL)
-            sb.sleep(8)  # 适当延长等待时间，确保单页应用加载
+            sb.sleep(8)
             
             if "server/" not in sb.get_current_url():
                 log("🔀 面板未响应，再次尝试强制切入控制台...")
@@ -103,11 +103,10 @@ def run_automation():
                 except Exception:
                     continue
             
-            # ==================== 【彻底重构】安全无错的 JS 强行穿透点击 ====================
+            # ==================== JS 强行穿透点击兜底 ====================
             if not btn_clicked:
                 log("⚠️ 常规文本定位未命中，尝试注入底层 JavaScript 强行穿透点击...")
                 
-                # 移除外层 return 关键字，改用纯内部执行函数，防止触发浏览器语法报错
                 js_click_script = """
                 (function() {
                     const tags = Array.from(document.querySelectorAll('button, div, span, a'));
@@ -131,10 +130,9 @@ def run_automation():
                 """
                 try:
                     sb.execute_script(js_click_script)
-                    # 执行完后多等待一会儿，通过判断页面变化或直接给 5 秒看是否成功
                     sb.sleep(5)
                     log("⚡ 穿透性 JS 已成功注入并执行完毕（已安全避开语法判定限制）")
-                    btn_clicked = True  # 标记为已尝试执行
+                    btn_clicked = True
                 except Exception as js_err:
                     log(f"❌ 执行高阶 JS 强打失败: {js_err}")
 
@@ -161,6 +159,12 @@ def run_automation():
         except Exception as e:
             error_msg = f"❌ 脚本运行出错: \n {str(e)}"
             log(error_msg)
+            # 出错时自动截屏保存，方便去 Artifacts 下载查看现场
+            try:
+                sb.save_screenshot("error_screenshot.png")
+                log("📸 已保存错误现场截图")
+            except Exception:
+                pass
         finally:
             log("🏁 脚本执行完毕.")
             full_notification_text = "\n".join(msg_logs)
