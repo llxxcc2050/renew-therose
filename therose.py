@@ -10,12 +10,12 @@ def get_config(env_name, default_value):
     val = os.environ.get(env_name, "").strip()
     return val if val else default_value
 
-TELEGRAM_BOT_TOKEN = get_config("TG_BOT_TOKEN", "8955581661:AAERfToZyB1RpAMRVQx1gx0lasNxjBJeLUQ")
-TELEGRAM_CHAT_ID = get_config("TG_CHAT_ID", "7816469203")
+TELEGRAM_BOT_TOKEN = get_config("TG_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID = get_config("TG_CHAT_ID", "")
 
-EMAIL = get_config("EMAIL", "llxxcc2050@gmail.com")
-PASSWORD = get_config("PASSWORD", "Llxxcc1214")
-SERVER_ID = get_config("SERVER_ID", "30c38986")
+EMAIL = get_config("EMAIL", "")
+PASSWORD = get_config("PASSWORD", "")
+SERVER_ID = get_config("SERVER_ID", "")
 
 PANEL_LOGIN_URL = "https://panel.therose.cloud/auth/login"
 SERVER_CONSOLE_URL = f"https://panel.therose.cloud/server/{SERVER_ID}"
